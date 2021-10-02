@@ -11,11 +11,6 @@ html {
   height: 100%;
 }
 
-.marker {
-  border-color: #555;
-  border-width: 1px;
-}
-
 /*Legend specific*/
 .legend {
   padding: 6px 8px;
