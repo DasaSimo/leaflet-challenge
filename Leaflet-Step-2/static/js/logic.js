@@ -3,13 +3,19 @@
 var myColors=['#ecffb3','#99cc00','#ffcc00',' #ff9900','#cc0000','#33001a'];
 
 var queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson"
+
+var queryUrlPlates = "https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json"
 // Perform a GET request to the query URL/
 d3.json(queryUrl).then(function (data) {
+  d3.json(queryUrlPlates).then(function (plates) {
+
   // Once we get a response, send the data.features object to the createFeatures function.
-  createFeatures(data.features);
+  createFeatures(data.features, plates.features);
+});
 });
 
-function createFeatures(earthquakeData) {
+
+function createFeatures(earthquakeData, platesData) {
 
 
   function markerSize(mag) {
@@ -21,22 +27,22 @@ function createFeatures(earthquakeData) {
     var colFill;
     var dep=feature.geometry.coordinates[2];
     if (dep<10) {
-      colFill=myColors[0]
+     colFill=myColors[0]
     }
     else if (dep<30) {
      colFill=myColors[1]
     }
     else if (dep<50) {
-      colFill=myColors[2]
+     colFill=myColors[2]
     }
     else if (dep<70) {
-      colFill=myColors[3]
+     colFill=myColors[3]
     }
     else if (dep<90) {
-      colFill=myColors[4]
+     colFill=myColors[4]
     }
     else {
-      colFill=myColors[5]
+     colFill=myColors[5]
     }
     return new L.CircleMarker(latlng, {
       fillOpacity: 0.75,
@@ -61,8 +67,10 @@ function createFeatures(earthquakeData) {
     pointToLayer : marker
   });
 
+  var plate = boundaries(platesData);
+
   // Send our earthquakes layer to the createMap function/
-  createMap(earthquakes);
+  createMap(earthquakes, plate);
 }
 
 //  when using MapBox
@@ -83,26 +91,40 @@ function createFeatures(earthquakeData) {
 // }).addTo(myMap);
 
 
-function createMap(earthquakes) {
+function createMap(earthquakes, plate) {
 
   // Create the base layers.
-  var street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-  })
+  //var street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    //attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+ // })
 
   var topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
     attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
   });
 
+  var satelite =   L.tileLayer('https://api.maptiler.com/tiles/satellite/{z}/{x}/{y}.jpg?key=qFKAwVVTsPD48kA1clbr', {
+    attribution: "\u003ca href=\"https://www.maptiler.com/copyright/\" target=\"_blank\"\u003e\u0026copy; MapTiler\u003c/a\u003e \u003ca href=\"https://www.openstreetmap.org/copyright\" target=\"_blank\"\u003e\u0026copy; OpenStreetMap contributors\u003c/a\u003e"
+});
+
+  var  outdoor = L.tileLayer('https://api.maptiler.com/tiles/outdoor/{z}/{x}/{y}.pbf?key=qFKAwVVTsPD48kA1clbr', {
+    attribution: "\u003ca href=\"https://www.maptiler.com/copyright/\" target=\"_blank\"\u003e\u0026copy; MapTiler\u003c/a\u003e \u003ca href=\"https://www.openstreetmap.org/copyright\" target=\"_blank\"\u003e\u0026copy; OpenStreetMap contributors\u003c/a\u003e"
+});
+
   // Create a baseMaps object.
   var baseMaps = {
-    "Street Map": street,
-    "Topographic Map": topo
+    "Outdoor Map": outdoor,
+    "Topographic Map": topo,
+    "Satelite Map" : satelite
   };
 
   // Create an overlay object to hold our overlay.
+ 
+    
+
   var overlayMaps = {
-    Earthquakes: earthquakes
+    Earthquakes: earthquakes, 
+    "Tectonic Plates": plate,
+    "Greetings ": st(),
   };
 
   // Create our map, giving it the streetmap and earthquakes layers to display on load.
@@ -111,7 +133,7 @@ function createMap(earthquakes) {
       37.09, -95.71
     ],
     zoom: 5,
-    layers: [street, earthquakes]
+    layers: [satelite, earthquakes]
   });
 
   // Create a layer control.
@@ -137,3 +159,36 @@ function createMap(earthquakes) {
   
   legend.addTo(myMap);  
 }
+
+  function st() {
+    one=[];
+      var del=[[-1,2],[-2,0],[-1,-2],[0,-2],[4,-3],[4,3],[0,2],[-1,2],[-2,0],[-1,-2]];
+      x=19;y=52;
+      var os=[];
+      for(i=0;i<del.length;i++) {
+        os.push([y+=del[i][1],x+=del[i][0]])
+      }
+      one.push(L.polygon(os, {color: 'red'}));
+      return L.layerGroup(one); 
+  };
+
+    
+    function boundaries(platesData) {
+      allPlates = []
+      for (var i = 0; i < platesData.length; i++) {
+        var plate = platesData[i];
+        var coordFlip=[];
+        coordinates=plate.geometry.coordinates;
+        for(j=0;j<coordinates.length;j++) {
+          coordFlip.push([coordinates[j][1],coordinates[j][0]]);
+        }
+        allPlates.push(
+          L.polyline(coordFlip)
+        )}
+        return L.layerGroup(allPlates);  
+      };
+     
+
+
+  
+
