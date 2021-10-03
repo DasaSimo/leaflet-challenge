@@ -7,7 +7,7 @@ var queryUrlPlates = "https://raw.githubusercontent.com/fraxen/tectonicplates/ma
 // Perform a GET request to the query URL/
 d3.json(queryUrl).then(function (data) {
   d3.json(queryUrlPlates).then(function (plates) {
-    // Once we get a response, send the data.features object to the createFeatures function.
+    // Once we get a response, sendind the data.features object to the createFeatures function
     createFeatures(data.features, plates.features);
   });
 });
@@ -52,7 +52,7 @@ function createFeatures(earthquakeData, platesData) {
 
 
   function onEachFeature(feature, layer) {
-    layer.bindPopup(`<h3>${feature.properties.place}</h3><hr><p>${new Date(feature.properties.time)}<br>Magnitude: ${(feature.properties.mag)}
+    layer.bindPopup(`<h3>${feature.properties.place}</h3><hr><p>Date: ${new Date(feature.properties.time)}<br>Magnitude: ${(feature.properties.mag)}
     </p>`);
   }
 
@@ -74,7 +74,7 @@ function createMap(earthquakes, plate) {
 
   // Create the base layers
 
-  var street_s = L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+  var mapBox_street_s = L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
     attribution: '© <a href="https://www.mapbox.com/feedback/">Mapbox</a> © <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     tileSize: 512,
     zoomOffset: -1,
@@ -111,14 +111,14 @@ function createMap(earthquakes, plate) {
     "Satellite": mapBox_sat,
     "Light": mapBox_light,
     "Outdoor": mapBox_out,
-    "Street - Satellite": street_s
+    "Street - Satellite": mapBox_street_s
   };
 
   // Create an overlay object to hold our overlay.
   var overlayMaps = {
     Earthquakes: earthquakes,
     "Tectonic Plates": plate,
-    "Greetings ": sk(),
+    // "Greetings ": sk(),
   };
 
   // Create our map, giving it the streetmap and earthquakes layers to display on load
@@ -156,16 +156,16 @@ function createMap(earthquakes, plate) {
   legend.addTo(myMap);
 }
 
-// greetings
-function sk() {
-  var del = [[-1, 2], [-2, 0], [-1, -2], [0, -2], [4, -3], [4, 3], [0, 2], [-1, 2], [-2, 0], [-1, -2]];
-  x = 19; y = 50;
-  var os = [];
-  for (i = 0; i < del.length; i++) {
-    os.push([y += del[i][1], x += del[i][0]])
-  }
-  return L.layerGroup([L.polygon(os, { color: 'red' })]);
-};
+// // greetings
+// function sk() {
+//   var del = [[-1, 2], [-2, 0], [-1, -2], [0, -2], [4, -3], [4, 3], [0, 2], [-1, 2], [-2, 0], [-1, -2]];
+//   x = 19; y = 50;
+//   var os = [];
+//   for (i = 0; i < del.length; i++) {
+//     os.push([y += del[i][1], x += del[i][0]])
+//   }
+//   return L.layerGroup([L.polygon(os, { color: 'red' })]);
+// };
 
 // creating plates boundaries
 function boundaries(platesData) {
